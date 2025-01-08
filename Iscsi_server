@@ -1,0 +1,45 @@
+# Install iSCSI target software and LVM2
+apt-get update
+apt-get install lvm2 targetcli-fb
+
+# List block devices to check if the disk (e.g., /dev/sdb) is available
+lsblk
+
+# Create physical volume (replace /dev/sdb with your device name)
+pvcreate /dev/sdb
+
+# Create a volume group
+vgcreate vg_iscsi /dev/sdb
+
+# Create a logical volume (replace with your desired size)
+lvcreate -n lv_iscsi-disk-01 -L 1G vg_iscsi
+
+# List logical volumes to confirm
+lvs
+# Launch the targetcli shell
+targetcli
+
+# Navigate to backstores and create a block storage object
+cd backstores/block
+create block1 /dev/mapper/vg_iscsi-lv_iscsi--disk--01
+
+# Create an iSCSI target
+cd /iscsi
+create iqn.2024-12.cdac.acts.hpcsa.sbm:disk1
+
+# Set access control list (ACL) for initiator (replace <initiator iqn> with your client initiator name)
+cd iqn.2024-12.cdac.acts.hpcsa.sbm:disk1/tpg1/acls
+create iqn.1993-08.org.debian:01:84104998b5d  # This is an example; replace with your initiator IQN
+
+# Create LUN for the storage
+cd /iscsi/iqn.2024-12.cdac.acts.hpcsa.sbm:disk1/tpg1/luns
+create /backstores/block/block1
+
+# Exit the targetcli shell
+exit
+
+# Restart the iSCSI target service to apply changes
+systemctl restart rtslib-fb-targetctl
+
+# Check the status of the service
+systemctl status rtslib-fb-targetctl
