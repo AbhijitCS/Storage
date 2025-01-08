@@ -1,32 +1,34 @@
   LVM LAB
   
-    87  lsblk 
-   88  pvcreate /dev/sdb /dev/sdc
-   89  apt-get install lvm2
-   90  clear
-   91  pvcreate /dev/sdb /dev/sdc
-   92  vgcreate HPCSA /dev/sdb /dev/sdc
-   93  pvs
-   94  vgs
-   95  pvdisplay 
-   96  vgdisplay 
-   97  clear
-   98  
-   99  lvs
-  100  vgs
-  101  lvcreate -n hpcsa_lab1 --size 1G HPCSA
-  102  lvs
-  103  vgs
-  104  clear
-  105  fdisk /dev/mapper/HPCSA-hpcsa_lab
-  106  fdisk -l
-  107  lvremove -n hpcsa_lab1 
-  108  lvremove -n hpcsa_lab1
-  109  mkfs.ext4 /dev/mapper/HPCSA-hpcsa_lab1
-  110  fdisk -l
-  111  mkdir /mnt/disk-1
-  112  mount /dev/mapper/HPCSA-hpcsa_lab1 /mnt/disk-1/
-  113  clear
+lsblk 
+apt-get install lvm2
+clear
+pvcreate /dev/sdb /dev/sdc
+vgcreate HPCSA /dev/sdb /dev/sdc
+pvs
+vgs
+pvdisplay 
+vgdisplay 
+clear
+lvs
+vgs
+
+
+
+lvcreate -n hpcsa_lab1 --size 1G HPCSA
+
+lvs
+vgs
+clear
+###fdisk /dev/mapper/HPCSA-hpcsa_lab
+fdisk -l
+lvremove -n hpcsa_lab1 
+lvremove -n hpcsa_lab1
+mkfs.ext4 /dev/mapper/HPCSA-hpcsa_lab1
+fdisk -l
+mkdir /mnt/disk-1
+mount /dev/mapper/HPCSA-hpcsa_lab1 /mnt/disk-1/
+clear
   114  df -h
   115  lvextend -L +2G /dev/mapper/HPCSA-hpcsa_lab
   116  lvs
