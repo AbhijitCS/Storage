@@ -1,0 +1,18 @@
+apt-get install mdadm -y
+mdadm --create --verbose /dev/md1 --level=1 --raid-devices=2 /dev/sdb /dev/sdc
+lsblk
+mdadm --detail --scan /dev/md1
+mdadm --detail --scan /dev/md1 >> /etc/mdadm/mdadm.conf 
+cat /etc/mdadm/mdadm.conf 
+nano /etc/mdadm/mdadm.conf 
+mdadm --detail --scan /dev/md1 >> /etc/mdadm/mdadm.conf 
+cat /etc/mdadm/mdadm.conf https://etherpad.opendev.org/p/dhpcsa112024
+update-initramfs -u
+(format the disk)
+lsblk 
+mkfs.ext4 /dev/md1
+mkdimdadm --assemble /dev/md1r /mnt/raid_1
+mount /dev/md1 /mnt/raid_1/
+lsblk
+touch 
+ls 
