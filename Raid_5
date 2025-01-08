@@ -23,3 +23,4 @@ cd /mnt/raid_5/
 ls
 cat test.txt 
 mdadm --detail /dev/md0
+lsblk
