@@ -1,0 +1,77 @@
+# List available block devices
+lsblk
+
+# Create Physical Volumes (PVs)
+pvcreate /dev/sdb /dev/sdc
+
+# Install LVM utilities
+apt-get install lvm2
+
+# Create Volume Group (VG)
+vgcreate HPCSA /dev/sdb /dev/sdc
+
+# Display information about Physical Volumes
+pvs
+
+# Display information about Volume Groups
+vgs
+
+# Display detailed information about Physical Volumes
+pvdisplay
+
+# Display detailed information about Volume Groups
+vgdisplay
+
+# Create Logical Volume (LV)
+lvcreate -n hpcsa_lab1 --size 1G HPCSA
+
+# Display information about Logical Volumes
+lvs
+
+# Remove Logical Volume
+lvremove -n hpcsa_lab1
+
+# Create file system on Logical Volume
+mkfs.ext4 /dev/mapper/HPCSA-hpcsa_lab1
+
+# List available partitions and devices
+fdisk -l
+
+# Create mount point for the volume
+mkdir /mnt/disk-1
+
+# Extend the Logical Volume by 2GB
+lvextend -L +2G /dev/mapper/HPCSA-hpcsa_lab
+
+# Resize the file system after extending the Logical Volume
+resize2fs /dev/mapper/HPCSA-hpcsa_lab
+
+# Create another Logical Volume
+lvcreate -n hpcsa_lab_3 --size 1G HPCSA
+
+# Create file system on the new Logical Volume
+mkfs.ext4 /dev/mapper/HPCSA-hpcsa_lab_3
+
+# Create mount point for the new volume
+mkdir /mnt/disk_3
+
+# Mount the new Logical Volume
+mount /dev/mapper/HPCSA-hpcsa_lab_3 /mnt/disk_3/
+
+# Check disk usage
+df -h
+
+# Extend the new Logical Volume by 2GB
+lvextend -L +2G /dev/mapper/HPCSA-hpcsa_lab_3
+
+# Check Logical Volumes status
+lvs
+
+# Check disk usage again
+df -h
+
+# Resize the file system on the newly extended logical volume
+resize2fs /dev/mapper/HPCSA-hpcsa_lab_3
+
+# Final check on disk usage
+df -h
