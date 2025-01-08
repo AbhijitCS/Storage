@@ -1,0 +1,158 @@
+# Install the open-iscsi package
+apt-get update
+apt-get install open-iscsi
+
+# Check the initiator name in /etc/iscsi/initiatorname.iscsi
+cat /etc/iscsi/initiatorname.iscsi
+
+# Discover the iSCSI targets from the server (replace with the iSCSI server IP)
+iscsiadm -m discovery -t sendtargets -p 192.168.82.150:3260
+
+# Log in to the discovered target
+iscsiadm -m node --login
+
+# List block devices to verify the new iSCSI disk
+lsblk
+
+# Use fdisk or similar to partition the new disk (replace /dev/sdx with the iSCSI disk)
+fdisk /dev/sdx
+
+# Create a new partition (press `n` to create, `w` to write)
+
+# Format the partition (use ext4 or xfs)
+mkfs.ext4 /dev/sdx   # or mkfs.xfs /dev/sdx
+
+# Create a mount point
+mkdir /mnt/iscsi_lv_disk01
+
+# Mount the disk
+mount /dev/sdx /mnt/iscsi_lv_disk01/
+# Check disk usage
+df -h
+
+# Check the status of iSCSI sessions
+iscsiadm -m session
+
+# Logout from all iSCSI sessions
+iscsiadm -m node --logoutall=all
+
+Here’s a more organized and cleaned-up guide for setting up an iSCSI server and client configuration. It is separated into distinct sections for the iSCSI client and iSCSI server.
+iSCSI Server Configuration (Debian 12)
+1. Install Required Packages on the iSCSI Server (Debian 12)
+
+# Install iSCSI target software and LVM2
+apt-get update
+apt-get install lvm2 targetcli-fb
+
+2. Prepare the Storage for Sharing (Optional: Add a new disk)
+
+# List block devices to check if the disk (e.g., /dev/sdb) is available
+lsblk
+
+# Create physical volume (replace /dev/sdb with your device name)
+pvcreate /dev/sdb
+
+# Create a volume group
+vgcreate vg_iscsi /dev/sdb
+
+# Create a logical volume (replace with your desired size)
+lvcreate -n lv_iscsi-disk-01 -L 1G vg_iscsi
+
+# List logical volumes to confirm
+lvs
+
+3. Configure the iSCSI Target Using targetcli
+
+# Launch the targetcli shell
+targetcli
+
+# Navigate to backstores and create a block storage object
+cd backstores/block
+create block1 /dev/mapper/vg_iscsi-lv_iscsi--disk--01
+
+# Create an iSCSI target
+cd /iscsi
+create iqn.2024-12.cdac.acts.hpcsa.sbm:disk1
+
+# Set access control list (ACL) for initiator (replace <initiator iqn> with your client initiator name)
+cd iqn.2024-12.cdac.acts.hpcsa.sbm:disk1/tpg1/acls
+create iqn.1993-08.org.debian:01:84104998b5d  # This is an example; replace with your initiator IQN
+
+# Create LUN for the storage
+cd /iscsi/iqn.2024-12.cdac.acts.hpcsa.sbm:disk1/tpg1/luns
+create /backstores/block/block1
+
+# Exit the targetcli shell
+exit
+
+4. Restart the Target Service
+
+# Restart the iSCSI target service to apply changes
+systemctl restart rtslib-fb-targetctl
+
+# Check the status of the service
+systemctl status rtslib-fb-targetctl
+###############################################################################
+iSCSI Client Configuration (Debian 12)
+1. Install Required Packages on the iSCSI Client (Debian 12)
+
+# Install the open-iscsi package
+apt-get update
+apt-get install open-iscsi
+
+2. Check the Initiator Name (Optional)
+
+# Check the initiator name in /etc/iscsi/initiatorname.iscsi
+cat /etc/iscsi/initiatorname.iscsi
+
+3. Discover and Log in to the iSCSI Target
+
+# Discover the iSCSI targets from the server (replace with the iSCSI server IP)
+iscsiadm -m discovery -t sendtargets -p 192.168.82.150:3260
+
+# Log in to the discovered target
+iscsiadm -m node --login
+
+4. Verify the New iSCSI Disk
+
+# List block devices to verify the new iSCSI disk
+lsblk
+
+5. Partition and Format the iSCSI Disk
+
+# Use fdisk or similar to partition the new disk (replace /dev/sdx with the iSCSI disk)
+fdisk /dev/sdx
+
+# Create a new partition (press `n` to create, `w` to write)
+
+# Format the partition (use ext4 or xfs)
+mkfs.ext4 /dev/sdx   # or mkfs.xfs /dev/sdx
+
+# Create a mount point
+mkdir /mnt/iscsi_lv_disk01
+
+# Mount the disk
+mount /dev/sdx /mnt/iscsi_lv_disk01/
+
+6. Verify the Mount
+
+# Check disk usage
+df -h
+
+7. iSCSI Session Management Commands
+
+# Check the status of iSCSI sessions
+iscsiadm -m session
+
+# Logout from all iSCSI sessions
+iscsiadm -m node --logoutall=all
+
+
+
+##############################      iSCSI Client (CentOS)
+
+If the iSCSI client is running CentOS, you will need to restart and manage the iSCSI target service differently:
+# Restart the target service on CentOS
+systemctl restart target
+# Check the status of the target service
+systemctl status target
